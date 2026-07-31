@@ -12,7 +12,7 @@ class HimportDemo < Thor
   # Constants
   PLAYER_TAGS = ["vladvildanov", "elena-kolevska", "petyaslavova", "antirez", "nosqlgeek"]
   NUM_IMPORTS = 100
-  NUM_BENCHMARK_IMPORTS = NUM_IMPORTS * 10
+  NUM_BENCHMARK_IMPORTS = NUM_IMPORTS * 10000
 
 
   # Helper to connect to Redis
@@ -104,7 +104,35 @@ class HimportDemo < Thor
 
   desc "benchmark", "Run a short HSET vs. HIMPORT benchmark."
   def benchmark
+    puts "Benchmarking #{NUM_BENCHMARK_IMPORTS} records ..."
 
+    # HSET benchmark
+    hset_start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+    redis.pipelined do |pipeline|
+      (1..NUM_BENCHMARK_IMPORTS).each {
+        uuid, score, tag = random_demo_data
+        pipeline.hset("scores:#{uuid}", "_uid", uuid, "score", score, "tag", tag)
+      }
+    end
+
+    hset_elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - hset_start
+    puts "HSET:    #{NUM_BENCHMARK_IMPORTS} records in #{hset_elapsed.round(3)}s"
+
+    # HIMPORT benchmark
+    himport_start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+    redis.pipelined do |pipeline|
+      pipeline.himport_prepare("scores", %w[_uid score tag])
+
+      (1..NUM_BENCHMARK_IMPORTS).each {
+        uuid, score, tag = random_demo_data
+        pipeline.himport_set(uuid, "scores", [uuid, score, tag])
+      }
+    end
+
+    himport_elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - himport_start
+    puts "HIMPORT: #{NUM_BENCHMARK_IMPORTS} records in #{himport_elapsed.round(3)}s"
   end
 end
 
