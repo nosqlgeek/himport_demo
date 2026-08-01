@@ -50,6 +50,10 @@ The command `HIMPORT` has several sub-commands. The first one is `HIMPORT PREPAR
 redis.himport_prepare("scores", %w[_uid score tag])
 ```
 
+It's important to understand that the prepared field set is only valid in the context of the connection on which it was executed.
+
+TODO: Disconnects
+
 
 ## A simple benchmark
 
