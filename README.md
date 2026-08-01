@@ -36,10 +36,19 @@ redis.hset("scores:68430017", "_uid", "68430017", "score", 42, "tag", "vladvilda
 redis.hset("scores:03DBA163", "_uid", "03DBA163", "score", 234, "tag", "nosqlgeek")
 ```
 
-One thing stands out: We’re repeatedly sending not just the data, but also the field names.
+One thing stands out: We’re repeatedly sending not just the data, but also the field names. This is exactly what `HIMPORT` is going to solve.
 
-> TODO
+## How does it work?
 
+The command `HIMPORT` has several sub-commands. The first one is `HIMPORT PREPARE`. It allows you to declare a field set. Here is an example of the field set `scores` with the fields:
+
+* **_uid**: The player id
+* **score**: The score that the player achieved 
+* **tag**: The player tag.
+  
+```
+redis.himport_prepare("scores", %w[_uid score tag])
+```
 
 
 ## A simple benchmark
