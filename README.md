@@ -90,6 +90,7 @@ The demo CLI app includes a `bulk` mode for this purpose:
           uuid, score, tag = random_demo_data
           pipeline.himport_set(uuid, "scores", [uuid, score, tag])
         }
+        pipeline.himport_discard("scores")
       end
 ```
 
