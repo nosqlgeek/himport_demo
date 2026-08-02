@@ -66,7 +66,7 @@ Once the field set is no longer needed, it can be discarded. Discarding the fiel
 
 ### Prepare once, use anywhere in your application
 
-The demo CLI app himport_demo.rb includes an inline mode, which simulates a scenario where you prepare your field sets when starting your application.
+The demo CLI app `himport_demo.rb` includes an inline mode, which simulates a scenario where you prepare your field sets when starting your application.
 
 ```bash
 ruby himport_demo.rb inline
