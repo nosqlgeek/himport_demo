@@ -40,7 +40,7 @@ One thing stands out: We’re repeatedly sending not just the data, but also the
 
 ## How does it work?
 
-The command `HIMPORT` has several sub-commands. The first one is `HIMPORT PREPARE`. It allows you to declare a field set. Here is an example of the field set `scores` with the fields:
+The `HIMPORT` command includes several sub-commands, the first of which is `HIMPORT PREPARE`. This sub-command allows you to declare a field set. Below is an example of a field set named "scores" with the following fields:
 
 * **_uid**: The player id
 * **score**: The score that the player achieved 
@@ -57,31 +57,31 @@ The command `HIMPORT` has several sub-commands. The first one is `HIMPORT PREPAR
     redis.himport_discard("scores")
 ```
 
-It's important to understand that the prepared field set is only valid in the context of the connection on which `HIMPORT PREPARE` was executed.
+It’s important to note that the prepared field set is only valid within the context of the connection where `HIMPORT PREPARE` was executed.
 
-This is a good time to revisit this `himport_auto_prepare` option. The client library keeps all prepared imports inside an internal registry. So, if a connection disconnects and then reconnects it reregisters all the preparations automatically.
+This is a good opportunity to revisit the `himport_auto_prepare` option. The client library maintains an internal 
+registry of all prepared imports. If a connection disconnects and then reconnects, it automatically re-registers all preparations.
 
-As soon as the field set isn't needed anymore, it can be discarded. Discarding the field set removes it from the registry.
-
+Once the field set is no longer needed, it can be discarded. Discarding the field set removes it from the registry.
 
 ### Prepare once, use anywhere in your application
 
-The demo CLI app `himport_demo.rb` has a mode `inline` which mimics a scenario where you prepare your fieldsets when starting your application. 
+The demo CLI app himport_demo.rb includes an inline mode, which simulates a scenario where you prepare your field sets when starting your application.
 
 ```bash
 ruby himport_demo.rb inline
 ```
 
-The previously mentioned registry allowx you to use `HIMPORT` as a general alternative to `HSET`. It's strongly  advised to use `himport_auto_prepare=true`.
+The previously mentioned registry allows you to use `HIMPORT` as a general alternative to `HSET`. It's strongly  advised to use `himport_auto_prepare=true`.
 
-There is the following caveat: The client library `redis-rb` doesn't have built-in connection pooling. However, if you use a pool of connections as described in [the README](https://github.com/redis/redis-rb#connection-pooling-and-thread-safety), you need to take into account that each connection of the pool needs to be prepared by you. 
+**Note**: The client library `redis-rb` does not have built-in connection pooling. However, if you use a connection pool (as described in the [README](https://github.com/redis/redis-rb#connection-pooling-and-thread-safety)), you must ensure that each connection in the pool is prepared individually.
 
 
 ### Prepare, bulk import, discard
 
-The more common use case is to perform a the preparation and bulk import on within a single pipeline. Redis pipelining allows issuing multiple commands at once without waiting for the response to each individual command. A pipeline is always executed against a single connections. You can set `himport_auto_prepare=false` for this scenario.
+A more common use case involves performing the preparation and bulk import within a single pipeline. Redis pipelining allows you to issue multiple commands at once without waiting for a response to each individual command. A pipeline always executes against a single connection. For this scenario, you can set `himport_auto_prepare` to `false`.
 
-The demo CLI app has a mode called `bulk` for that.
+The demo CLI app includes a `bulk` mode for this purpose:
 
 ```ruby
       result = redis.pipelined do |pipeline|
@@ -93,17 +93,16 @@ The demo CLI app has a mode called `bulk` for that.
       end
 ```
 
-As soon as the import completes, the field set isn't needed anymore and can be discarded.
-
+Once the import completes, the field set is no longer needed and can be discarded.
 
 ## A simple benchmark
 
-Last but not least the CLI app has a benchmark mode, which does the following:
+Last but not least, the CLI app includes a `benchmark` mode, which performs the following steps:
 
-1. Prepare a single fields, then pipeline a number of `HSET` commands and measure how long it took to complete the import
-2. Perform the exact same steps with `HIMPORT` which allows a fair comparison.
+1. Prepares a single field set, then pipelines a number of `HSET` commands and measures the time taken to complete the import.
+2. Repeats the exact same steps using `HIMPORT`, enabling a fair comparison.
 
-The following benchmark was executed on my local host with a field set that has just 3 fields. It shows an 11% faster import. Given that `HIMPORT` saves primarily network bandwidth, we expect more savings with more field names.
+The following benchmark was executed on a local host with a field set containing just three fields. It demonstrated an 11% faster import. Since `HIMPORT` primarily saves network bandwidth, we expect even greater performance improvements with larger field sets.
 
 ```bash
 ruby himport_demo.rb benchmark
