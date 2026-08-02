@@ -68,7 +68,7 @@ As soon as the field set isn't needed anymore, it can be discarded. Discarding t
 
 The demo CLI app `himport_demo.rb` has a mode `inline` which mimics a scenario where you prepare your fieldsets when starting your application. 
 
-```ruby
+```bash
 ruby himport_demo.rb inline
 ```
 
@@ -85,16 +85,12 @@ The demo CLI app has a mode called `bulk` for that.
 
 ```ruby
       result = redis.pipelined do |pipeline|
-      pipeline.himport_prepare("scores", %w[_uid score tag])
-
-      (1..NUM_IMPORTS).each { |i|
-        uuid, score, tag = random_demo_data
-        puts "#{i}: Importing score #{score} of player #{tag} with id #{uuid} ..."
-        pipeline.himport_set(uuid, "scores", [uuid, score, tag])
-      }
-
-      pipeline.himport_discard("scores")
-    end
+        pipeline.himport_prepare("scores", %w[_uid score tag])
+        (1..NUM_IMPORTS).each { |i|
+          uuid, score, tag = random_demo_data
+          pipeline.himport_set(uuid, "scores", [uuid, score, tag])
+        }
+      end
 ```
 
 As soon as the import completes, the field set isn't needed anymore and can be discarded.
@@ -102,9 +98,14 @@ As soon as the import completes, the field set isn't needed anymore and can be d
 
 ## A simple benchmark
 
-TODO
+Last but not least the CLI app has a benchmark mode, which does the following:
 
-```
+1. Prepare a single fields, then pipeline a number of `HSET` commands and measure how long it took to complete the import
+2. Perform the exact same steps with `HIMPORT` which allows a fair comparison.
+
+The following benchmark was executed on my local host with a field set that has just 3 fields. It shows an 11% faster import. Given that `HIMPORT` saves primarily network bandwidth, we expect more savings with more field names.
+
+```bash
 ruby himport_demo.rb benchmark
 Benchmarking 1000000 records ...
 HSET:    1000000 records in 12.029s
