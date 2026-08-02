@@ -3,7 +3,7 @@
 I’m not a Ruby developer, and my code samples might make that clear. However, there are two reasons I’m using Ruby for the examples in this article:
 
 1. A new release of [redis-rb](https://github.com/redis/redis-rb).
-2. Its support for a new Redis command: HIMPORT.
+2. Its support for a new Redis command: `HIMPORT`.
 
 
 ## Getting started
