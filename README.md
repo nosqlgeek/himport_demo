@@ -28,7 +28,7 @@ The `himport_auto_prepare` option defaults to `true`. I included it here for ref
 
 ## Why `HIMPORT`?
 
-Why not just use HSET? To answer that, let’s look at a Ruby example:
+Why not just use `HSET`? To answer that, let’s look at a Ruby example:
 
 ```ruby
 redis.hset("scores:68430017", "_uid", "68430017", "score", 42, "tag", "vladvildanov")
